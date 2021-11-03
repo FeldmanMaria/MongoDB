@@ -1,0 +1,290 @@
+1.Create new document with _id = 1 
+> db.animals.save({_id:1})
+WriteResult({ "nMatched" : 1, "nUpserted" : 0, "nModified" : 1 })
+
+2.Save again document with _id = 1 (using save/insert Command)
+> db.animals.insert({_id:1})
+WriteResult({
+        "nInserted" : 0,
+        "writeError" : {
+                "code" : 11000,
+                "errmsg" : "E11000 duplicate key error collection: demo.animals index: _id_ dup key: { _id: 1.0 }"
+        }
+
+3.Add a field: name to the document you just created, and assign its value of lion. 
+fetch the document. (findAndReplace/update)
+> db.animals.updateOne({_id:1},{$set:{"name":"lion"}})
+{ "acknowledged" : true, "matchedCount" : 1, "modifiedCount" : 1 }
+> db.animals.find({_id:1})
+{ "_id" : 1, "name" : "lion" }
+
+4.Add a field: Age to the document you just created, and assign its value of 30. fetch the document.
+ (findAndReplace)
+> db.animals.updateOne({_id:1},{$set:{Age:30}})
+{ "acknowledged" : true, "matchedCount" : 1, "modifiedCount" : 1 }
+> db.animals.find({_id:1})
+{ "_id" : 1, "name" : "lion", "Age" : 30 }
+
+5.Increment the Age by 2, fetch the result
+> db.animals.updateOne({_id:1},{$inc:{Age:2}})
+{ "acknowledged" : true, "matchedCount" : 1, "modifiedCount" : 1 }
+> db.animals.find({_id:1})
+{ "_id" : 1, "name" : "lion", "Age" : 32 }
+
+6.Decrement the age by 4, fetch the result
+> db.animals.updateOne({_id:1},{$inc:{Age:-4}})
+{ "acknowledged" : true, "matchedCount" : 1, "modifiedCount" : 1 }
+> db.animals.find({_id:1})
+{ "_id" : 1, "name" : "lion", "Age" : 28 }
+
+7.Multiple the Age value by 10.
+> db.animals.updateOne({_id:1},{$mul:{Age:10}})
+{ "acknowledged" : true, "matchedCount" : 1, "modifiedCount" : 1 }
+> db.animals.find({_id:1})
+{ "_id" : 1, "name" : "lion", "Age" : 280 }
+
+8.Add 2 to the Age field, only for documents who's Age value is less than 38. 
+Run this update multiple times till the nModified will be 0. Show the document.
+> db.animals.updateOne({_id:1},{$set:{Age:30}})
+{ "acknowledged" : true, "matchedCount" : 1, "modifiedCount" : 1 }
+> db.animals.updateOne({Age:{$lt:38}},{$inc:{Age:2}})
+{ "acknowledged" : true, "matchedCount" : 1, "modifiedCount" : 1 }
+> db.animals.updateOne({Age:{$lt:38}},{$inc:{Age:2}})
+{ "acknowledged" : true, "matchedCount" : 1, "modifiedCount" : 1 }
+> db.animals.updateOne({Age:{$lt:38}},{$inc:{Age:2}})
+{ "acknowledged" : true, "matchedCount" : 1, "modifiedCount" : 1 }
+> db.animals.updateOne({Age:{$lt:38}},{$inc:{Age:2}})
+{ "acknowledged" : true, "matchedCount" : 1, "modifiedCount" : 1 }
+> db.animals.updateOne({Age:{$lt:38}},{$inc:{Age:2}})
+{ "acknowledged" : true, "matchedCount" : 0, "modifiedCount" : 0 }
+> db.animals.find({_id:1})
+{ "_id" : 1, "name" : "lion", "Age" : 38 }
+
+9.For document : _id :1 , Add “cute” to tags array. Show the document
+> db.animals.updateOne({_id:1},{$set:{tags:["cute"]}})
+{ "acknowledged" : true, "matchedCount" : 1, "modifiedCount" : 1 }
+> db.animals.find({_id:1})
+{ "_id" : 1, "name" : "lion", "Age" : 38, "tags" : [ "cute" ] }
+
+10.Add “great” to the tags array.
+> db.animals.updateOne({_id:1},{$push:{"tags":"Great"}})
+{ "acknowledged" : true, "matchedCount" : 1, "modifiedCount" : 1 }
+> db.animals.find({_id:1})
+{ "_id" : 1, "name" : "lion", "age" : 38, "tags" : [ "cute", "Great" ] }
+
+11.Remove the Age field. Using the unset Command.
+> db.animals.updateOne({_id:1},{$unset:{"age":""}})
+{ "acknowledged" : true, "matchedCount" : 1, "modifiedCount" : 1 }
+> db.animals.find({_id:1})
+{ "_id" : 1, "name" : "lion", "tags" : [ "cute", "Great" ] }
+
+12.Add multiple values into tags Array:  King, Predator (addToSet)
+
+> db.animals.updateOne({_id:1},{$addToSet:{"tags":{$each:["King","Predator"]}}})
+{ "acknowledged" : true, "matchedCount" : 1, "modifiedCount" : 1 }
+> db.animals.find({_id:1})
+{ "_id" : 1, "name" : "lion", "tags" : [ "cute", "Great", "King", "Predator" ] }
+
+
+
+13.Same as above, using push command to insert in position no.2
+
+> db.animals.updateOne({_id:1},{$push:{"tags":{$each:["a","b"],$position:2}}})
+{ "acknowledged" : true, "matchedCount" : 1, "modifiedCount" : 1 }
+> db.animals.find({_id:1})
+{ "_id" : 1, "name" : "lion", "tags" : [ "cute", "Great", "a", "b", "King", "Predator" ] }
+
+
+14.Run the above again. Does the value insert again? YES
+
+> db.animals.updateOne({_id:1},{$push:{"tags":{$each:["a","b"],$position:2}}})
+{ "acknowledged" : true, "matchedCount" : 1, "modifiedCount" : 1 }
+> db.animals.find({_id:1})
+{ "_id" : 1, "name" : "lion", "tags" : [ "cute", "Great", "a", "b", "a", "b", "King", "Predator" ] }
+
+
+15.Replace the addToSet with Push command.
+מכוון שהחל משאלה 13 הבקשה הייתה להשתמש בפוש , בשאלה זו אני ישתמש בלהוסיף ל סאט
+
+> db.animals.updateOne({_id:1},{$addToSet:{"tags":{$each:["King","Predator"]}}})
+{ "acknowledged" : true, "matchedCount" : 1, "modifiedCount" : 0 }
+> db.animals.find({_id:1})
+{ "_id" : 1, "name" : "lion", "tags" : [ "cute", "Great", "a", "b", "a", "b", "King", "Predator" ] }
+
+
+16.Remove from the tags array some values – using pull and in Command.
+
+> db.animals.updateOne({_id:1},{$pull:{"tags":{$in:["a","b"]}}})
+{ "acknowledged" : true, "matchedCount" : 1, "modifiedCount" : 1 }
+> db.animals.find({_id:1})
+{ "_id" : 1, "name" : "lion", "tags" : [ "cute", "Great", "King", "Predator" ] }
+
+
+
+17.Replace the Cute item in tags Array with “Not Cute”
+> db.animals.updateMany(  {_id:1 , tags : "cute"},   { $set: { "tags.$" : "not Cute"}})
+{ "acknowledged" : true, "matchedCount" : 1, "modifiedCount" : 1 }
+> db.animals.find({_id:1})
+{ "_id" : 1, "name" : "lion", "tags" : [ "not Cute", "Great", "King", "Predator" ] }
+
+
+18.Pop all the tags items – one by one 
+> db.animals.updateOne({_id:1},{$pop:{tags:-1}})
+{ "acknowledged" : true, "matchedCount" : 1, "modifiedCount" : 1 }
+> db.animals.updateOne({_id:1},{$pop:{tags:-1}})
+{ "acknowledged" : true, "matchedCount" : 1, "modifiedCount" : 1 }
+> db.animals.updateOne({_id:1},{$pop:{tags:-1}})
+{ "acknowledged" : true, "matchedCount" : 1, "modifiedCount" : 1 }
+> db.animals.updateOne({_id:1},{$pop:{tags:-1}})
+{ "acknowledged" : true, "matchedCount" : 1, "modifiedCount" : 1 }
+> db.animals.updateOne({_id:1},{$pop:{tags:-1}})
+{ "acknowledged" : true, "matchedCount" : 1, "modifiedCount" : 0 }
+> db.animals.find({_id:1})
+{ "_id" : 1, "name" : "lion", "tags" : [ ] }
+
+
+19.	Write loop to add 10 new documents with id ranging from 10 to 20. 
+name field = “No name”. You can use a javascript for-loop for this.
+> var i=10;while(i<=20){db.animals.save({_id:i , name: "no name"}); i++}
+20
+> db.animals.find()
+{ "_id" : 1, "name" : "lion", "tags" : [ ] }
+{ "_id" : 2, "name" : "rabbit", "tags" : [ "land", "cute" ], "info" : { "type" : "mammal", "color" : "white" } }
+{ "_id" : 3, "name" : "shark", "tags" : [ "ocean" ], "info" : { "type" : "fish", "color" : "grey" } }
+{ "_id" : 4, "name" : "dolphin", "tags" : [ "ocean", "cute" ], "info" : { "type" : "mammal", "color" : "grey", "canFly" : null } }
+{ "_id" : 5, "name" : "penguin", "tags" : [ "land", "ocean", "cute" ], "info" : { "type" : "bird", "canFly" : false } }
+{ "_id" : 6, "name" : "duck", "tags" : [ "land", "cute" ], "info" : { "type" : "bird", "canFly" : true } }
+{ "_id" : 10, "name" : "no name" }
+{ "_id" : 11, "name" : "no name" }
+{ "_id" : 12, "name" : "no name" }
+{ "_id" : 13, "name" : "no name" }
+{ "_id" : 14, "name" : "no name" }
+{ "_id" : 15, "name" : "no name" }
+{ "_id" : 16, "name" : "no name" }
+{ "_id" : 17, "name" : "no name" }
+{ "_id" : 18, "name" : "no name" }
+{ "_id" : 19, "name" : "no name" }
+{ "_id" : 20, "name" : "no name" }
+
+
+
+20.	Add a field named “info.color” to all documents with id between 10 and 20 . Set the field value to grey.
+
+> db.animals.updateMany({_id:{$gte:10 , $lte:20}} , {$set: {"info.color" :"grey"}} )
+{ "acknowledged" : true, "matchedCount" : 11, "modifiedCount" : 11 }
+> db.animals.find()
+{ "_id" : 1, "name" : "lion", "tags" : [ ] }
+{ "_id" : 2, "name" : "rabbit", "tags" : [ "land", "cute" ], "info" : { "type" : "mammal", "color" : "white" } }
+{ "_id" : 3, "name" : "shark", "tags" : [ "ocean" ], "info" : { "type" : "fish", "color" : "grey" } }
+{ "_id" : 4, "name" : "dolphin", "tags" : [ "ocean", "cute" ], "info" : { "type" : "mammal", "color" : "grey", "canFly" : null } }
+{ "_id" : 5, "name" : "penguin", "tags" : [ "land", "ocean", "cute" ], "info" : { "type" : "bird", "canFly" : false } }
+{ "_id" : 6, "name" : "duck", "tags" : [ "land", "cute" ], "info" : { "type" : "bird", "canFly" : true } }
+{ "_id" : 10, "name" : "no name", "info" : { "color" : "grey" } }
+{ "_id" : 11, "name" : "no name", "info" : { "color" : "grey" } }
+{ "_id" : 12, "name" : "no name", "info" : { "color" : "grey" } }
+{ "_id" : 13, "name" : "no name", "info" : { "color" : "grey" } }
+{ "_id" : 14, "name" : "no name", "info" : { "color" : "grey" } }
+{ "_id" : 15, "name" : "no name", "info" : { "color" : "grey" } }
+{ "_id" : 16, "name" : "no name", "info" : { "color" : "grey" } }
+{ "_id" : 17, "name" : "no name", "info" : { "color" : "grey" } }
+{ "_id" : 18, "name" : "no name", "info" : { "color" : "grey" } }
+{ "_id" : 19, "name" : "no name", "info" : { "color" : "grey" } }
+{ "_id" : 20, "name" : "no name", "info" : { "color" : "grey" } }
+
+
+
+21.For Doc No 4, remove the first item from tags Array($pop)
+
+> db.animals.updateOne({_id:4},{$pop:{"tags":-1}})
+{ "acknowledged" : true, "matchedCount" : 1, "modifiedCount" : 1 }
+> db.animals.find({_id:4})
+{ "_id" : 4, "name" : "dolphin", "tags" : [ "cute" ], "info" : { "type" : "mammal", "color" : "grey", "canFly" : null } }
+
+
+22.Remove the tags array from document with id 4 .
+
+> db.animals.updateOne({_id:{$eq:4}},{$unset:{"tags":""}})
+{ "acknowledged" : true, "matchedCount" : 1, "modifiedCount" : 1 }
+> db.animals.find({_id:4})
+{ "_id" : 4, "name" : "dolphin", "info" : { "type" : "mammal", "color" : "grey", "canFly" : null } }
+
+
+23.Delete docs with _id between 10 and 20
+
+>  db.animals.deleteMany({_id: {$gte:10 , $lte:20}});
+{ "acknowledged" : true, "deletedCount" : 11 }
+
+
+24.For each of the docs add item: animal int the tag Array. Use UpdateMany with push commands
+>  db.animals.deleteMany({_id: {$gte:10 , $lte:20}});
+{ "acknowledged" : true, "deletedCount" : 11 }
+> db.animals.updateMany({} , {$push : {tags: "animal" }} , );
+{ "acknowledged" : true, "matchedCount" : 6, "modifiedCount" : 6 }
+> db.animals.find()
+{ "_id" : 1, "name" : "lion", "tags" : [ "animal" ] }
+{ "_id" : 2, "name" : "rabbit", "tags" : [ "land", "cute", "animal" ], "info" : { "type" : "mammal", "color" : "white" } }
+{ "_id" : 3, "name" : "shark", "tags" : [ "ocean", "animal" ], "info" : { "type" : "fish", "color" : "grey" } }
+{ "_id" : 4, "name" : "dolphin", "info" : { "type" : "mammal", "color" : "grey", "canFly" : null }, "tags" : [ "animal" ] }
+{ "_id" : 5, "name" : "penguin", "tags" : [ "land", "ocean", "cute", "animal" ], "info" : { "type" : "bird", "canFly" : false } }
+{ "_id" : 6, "name" : "duck", "tags" : [ "land", "cute", "animal" ], "info" : { "type" : "bird", "canFly" : true } }
+
+
+25.Use ReplaceOne to replace the lion doc with {name: lioness, tags array with one item: “animal”, info as a sub-document with color=grey, and canFly=false, keep the same id. 
+
+> db.animals.replaceOne({_id : 1} , {"name" : "lioness" , "tags": ["animal"] , "info" : { "color":"grey" , "canFly" : true}} )
+{ "acknowledged" : true, "matchedCount" : 1, "modifiedCount" : 1 }
+> db.animals.find({_id:1})
+{ "_id" : 1, "name" : "lioness", "tags" : [ "animal" ], "info" : { "color" : "grey", "canFly" : true } }
+
+26.Use UpdateOne to update doc id =15 with name : elephant ,  tags array : “big” info as a sub document with color = grey.In case the doc is not exists insert new with one with the items: 
+name : “elep” , tags :[“upsert value”]
+
+> db.animals.updateOne({_id:15},{$set:{name:"elephant"}},{"upsert":true})
+{
+        "acknowledged" : true,
+        "matchedCount" : 0,
+        "modifiedCount" : 0,
+        "upsertedId" : 15
+}
+
+
+27.Using one command bulkWrite -  insert new doc, delete one doc, and update one doc 
+> db.animals.bulkWrite( [ {"updateOne" : {"filter" : {"_id" : 2} ,"update" :{"name" :  {$set: "dfgdfgdfgdfg" }  }   } } , {"deleteOne": {"filter" : {"_id" : 1}}}  ] , {"ordered" : true}  )
+{
+        "acknowledged" : true,
+        "deletedCount" : 1,
+        "insertedCount" : 0,
+        "matchedCount" : 1,
+        "upsertedCount" : 0,
+        "insertedIds" : {
+
+        },
+        "upsertedIds" : {
+
+        }
+}
+> db.animals.find()
+{ "_id" : 2, "name" : { "$set" : "dfgdfgdfgdfg" } }
+{ "_id" : 3, "name" : "shark", "tags" : [ "ocean", "animal" ], "info" : { "type" : "fish", "color" : "grey" } }
+{ "_id" : 4, "name" : "dolphin", "info" : { "type" : "mammal", "color" : "grey", "canFly" : null }, "tags" : [ "animal" ] }
+{ "_id" : 5, "name" : "penguin", "tags" : [ "land", "ocean", "cute", "animal" ], "info" : { "type" : "bird", "canFly" : false } }
+{ "_id" : 6, "name" : "duck", "tags" : [ "land", "cute", "animal" ], "info" : { "type" : "bird", "canFly" : true } }
+{ "_id" : 15, "name" : "elephant" }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
